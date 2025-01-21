@@ -1,52 +1,183 @@
-Automating Incident Detection and Response in AWS Using GuardDuty, EventBridge, and Lambda
-
-
-Project Overview
-
-This project leverages AWS GuardDuty, Lambda, EventBridge, and SNS to automate incident response for potential security threats detected in Amazon EC2 instances. The goal is to isolate compromised instances, store findings for investigation, and notify the security team — all while adhering to the AWS Well-Architected Framework and security best practices.
-
- Tools & Technologies Used
+# Automating EC2 Instance Isolation with AWS Lambda and GuardDuty
 
 ![image alt](https://github.com/reyincyber/aws/blob/a62ca55ed1a79838400d853ac95882f37a783510/automating-incident-response/architectural%20diagrams/automating_idr_bc.drawio.png)
-Before Compromise
-1. AWS IAM (Identity and Access Management): To manage permissions and roles securely.
-2. AWS GuardDuty: For continuous monitoring and detection of security threats.
-3. AWS Lambda: To execute automated functions in response to detected threats.
-4. Amazon EventBridge: To manage event-driven workflows and trigger Lambda functions.
-5. Amazon SNS (Simple Notification Service):  For sending notifications regarding security events.
-6. Amazon EC2: Compute service where instances are monitored and managed.
 
-Methods
-1. An IAM role was set up with `AmazonEC2FullAccess` and `AWSLambda_FullAccess` permissions, allowing the Lambda function to control EC2 instances and handle necessary AWS service interactions.
-2. GuardDuty was enabled to monitor EC2 instances, focusing on identifying unauthorized access attempts or potential malware infections.
-3. An `IsolatedSecurityGroup` was created to restrict network access for compromised instances, with minimal inbound rules for internal control only.
-4. An EventBridge rule was created to trigger the Lambda function when GuardDuty detects a Medium or High-severity finding. The rule pattern specifically focuses on findings related to EC2 instances.
-5. A Lambda function was created with Python code to: Stop the compromised EC2 instance; and attach the isolated security group to the instance. The IAM role from Step 2 was attached to this Lambda function to allow it to manage EC2 instance attributes.
-6. Two SNS subscriptions were set up to receive notifications for: Medium to low-severity findings in GuardDuty; and Lambda function execution to alert administrators when an instance has been isolated and stopped.
-7. An S3 bucket was set up with a threatlist.txt file containing the IP address of a malicious instance. This file was added to the GuardDuty ThreatList configuration to simulate real-world threat scenarios.
+This repository provides a detailed guide for setting up an automated workflow to isolate compromised EC2 instances in response to AWS GuardDuty findings. The workflow uses EC2, GuardDuty, S3, EventBridge, and Lambda to detect, mitigate, and notify about security threats while adhering to the **principle of least privilege** for IAM roles and policies.
 
-Testing the Setup:
+---
 
+## Table of Contents
+1. [Project Overview](#project-overview)
+2. [Setup Instructions](#setup-instructions)
+   - [Create IAM Role](#1-create-an-iam-role)
+   - [Enable GuardDuty](#2-enable-guardduty)
+   - [Launch EC2 Instances](#3-launch-two-ec2-instances)
+   - [Create Restricted Security Group](#4-create-a-restricted-security-group)
+   - [Add Threat List to S3](#5-add-threat-list-file-to-s3-and-configure-guardduty-threat-list)
+   - [Set Up Lambda Function](#6-set-up-the-lambda-function)
+   - [Configure EventBridge Rule](#7-configure-eventbridge-rule)
+   - [Create SNS Topic for Notifications](#8-create-sns-topic-for-notifications)
+3. [Testing the Workflow](#testing-the-workflow)
+4. [Cleanup](#cleanup)
+5. [Real-World Considerations](#real-world-considerations)
+6. [References](#references)
+
+---
+
+## Project Overview
+
+This project automates the process of detecting and isolating compromised EC2 instances in real-time, minimizing security risks. It is designed for AWS users of all levels, including beginners, and includes step-by-step instructions to deploy the required resources and configurations. Features:
+- **Real-time Threat Detection:** Utilize Amazon GuardDuty to monitor malicious activities.
+- **Automated Instance Isolation:** Use AWS Lambda to stop and isolate compromised instances.
+- **Customizable Workflow:** Integrate a custom threat list using S3.
+- **Notifications:** Receive real-time email alerts via SNS.
+
+---
+
+## Setup Instructions
+
+### 1. Create an IAM Role
+
+**Purpose:** Enable Lambda to manage security groups, stop instances, and interact with GuardDuty.
+
+1. Navigate to the **IAM Console** → **Roles** → **Create Role**.
+2. Select **AWS Service** → **Lambda** under trusted entities.
+3. Attach the following policies:
+   - `AmazonEC2FullAccess`
+   - `AWSLambdaFullAccess`
+4. Name the role (e.g., `LambdaSecurityRole`) and create it.
+
+---
+
+### 2. Enable GuardDuty
+
+**Purpose:** Monitor for malicious activities in your AWS environment.
+
+1. Open the **GuardDuty Console**.
+2. Click **Enable GuardDuty** if not already enabled.
+
+---
+
+### 3. Launch Two EC2 Instances
+
+**Purpose:** Simulate a malicious actor (`MaliciousEC2`) and a compromised instance (`CompromisedEC2`).
+
+1. In the **EC2 Console**, click **Launch Instance**.
+2. Configure the instances:
+   - **AMI:** Amazon Linux 2
+   - **Type:** `t2.micro`
+   - **User Data Script:**
+     ```bash
+     #!/bin/bash
+     yum update -y
+     yum install nmap -y
+     ```
+3. Name the instances `MaliciousEC2` and `CompromisedEC2`.
+
+---
+
+### 4. Create a Restricted Security Group
+
+**Purpose:** Restrict traffic to isolate compromised instances.
+
+1. In **Security Groups**, create a new group:
+   - **Name:** `IsolatedSecurityGroup`
+   - **Inbound Rules:** SSH (Port 22) from your IP.
+   - **Outbound Rules:** Default.
+
+---
+
+### 5. Add Threat List File to S3 and Configure GuardDuty Threat List
+
+**Purpose:** Simulate threats using an S3-hosted IP list.
+
+1. Create an **S3 Bucket** (e.g., `threat-list-bucket`).
+2. Upload a `threatlist.txt` file containing `MaliciousEC2`'s IP.
+3. Configure GuardDuty to use the S3 threat list:
+   - Navigate to **GuardDuty** → **Settings** → **Threat Lists**.
+   - Add the S3 URL of your threat list file.
+
+---
+
+### 6. Set Up the Lambda Function
+
+**Purpose:** Automate the response to GuardDuty findings.
+
+1. Create a Lambda function (`IsolateInstance`) with Python 3.8+ as the runtime.
+2. Add the [Python code](https://github.com/reyincyber/aws/blob/e2619c4c47ea91bdf671186a4abbc0d18a86380f/automating-incident-response/lambda.py).
+3. Assign the `LambdaSecurityRole` to the function.
+4. Deploy and test the function.
+
+---
+
+### 7. Configure EventBridge Rule
+
+**Purpose:** Trigger Lambda on GuardDuty findings.
+
+1. Create a new rule in **EventBridge**:
+   - **Name:** `GuardDutyToLambdaRule`
+   - **Event Source:** GuardDuty
+   - Use the [event pattern JSON](https://github.com/reyincyber/aws/blob/65bc7573964be2e71d8c3fbaa0159592a62f65be/automating-incident-response/event_pattern.json).
+   - **Target:** Lambda function (`IsolateInstance`).
+
+---
+
+### 8. Create SNS Topic for Notifications
+
+**Purpose:** Notify users of security events.
+
+1. Create an SNS Topic (`GuardDutyNotifications`).
+2. Subscribe your email to the topic and confirm via email.
+
+---
+
+## Testing the Workflow
 ![image alt](https://github.com/reyincyber/aws/blob/main/automating-incident-response/architectural%20diagrams/automating_idr_ac.drawio.png)
-After Compromise
-1. Simulate Threats with Malicious Activity: SSH was used to connect to a CompromisedEC2 instance, from which a port scan was conducted against a MaliciousEC2 instance to simulate a network attack.
-2. Observe GuardDuty Findings: GuardDuty findings were monitored to confirm the detection of the malicious activity, resulting in a High or Medium severity alert.
-3. Validate Automated Response: Upon detecting the simulated attack, EventBridge triggered the Lambda function, which: Stopped the CompromisedEC2 instance and Applied the IsolatedSecurityGroup to remove it from the main network.
-4. This response was verified in the EC2 dashboard, where the instance’s status was shown as stopped, and the security group was updated.
+1. Connect to `CompromisedEC2` via SSH.
+2. Execute a payload script to simulate malicious activity. Script reference: [test.sh](https://github.com/reyincyber/aws/blob/95e71ee372768d4f1e1f3c556d28d03c79a9220a/automating-incident-response/test.sh).
+3. Verify:
+   - GuardDuty findings.
+   - Isolation and stopping of `CompromisedEC2`.
+   - SNS notifications.
 
-Real World Application
+---
 
-It is important to note the following while deploying this set up in real life:
-1. Ensuring Instance Availability: Adopt a severity-based response strategy where high-severity threats trigger immediate isolation, while medium and low-severity threats prompt monitoring and alerts without disrupting instance operations. Instead of stopping instances outright, consider reassigning them to a quarantine security group with restricted access, allowing continued operation for investigation purposes. Automate security best practices to enhance scalability and reduce manual intervention.
-2. Minimizing False Positives: Implement suppression rules in AWS GuardDuty to filter out non-critical findings, focusing on actionable threats. Regularly update threat intelligence sources to maintain detection accuracy. Fine-tune detection thresholds to balance sensitivity and specificity, reducing the likelihood of false alarms.
-3. Incorporating Feedback and Best Practices: Enable traceability by configuring comprehensive logging and monitoring across all layers of the workload. Apply security controls at every layer, including network, instance, and application levels, to implement a defense-in-depth strategy. Regularly conduct security reviews and audits to ensure compliance with evolving best practices and organizational requirements.
+## Cleanup
 
-Conclusions
+1. Delete all resources:
+   - EC2 instances
+   - Lambda functions
+   - S3 bucket
+   - IAM roles
+   - EventBridge rules
+   - SNS topics
+2. Verify that no resources are left to avoid unnecessary costs.
 
-Automating the isolation of compromised EC2 instances in response to AWS GuardDuty findings enhances security by reducing response times and limiting potential damage from security incidents. By implementing the recommended improvements, such as minimizing false positives and ensuring instance availability, and adhering to the AWS Well-Architected Framework's security principles, organizations can achieve a robust and resilient security posture in their AWS environments.
+---
 
-References
+## Real-World Considerations
 
-1. Cloud4DevOps. (2022, November 9). Security Hub remediations with GuardDuty Detection | Hands-on walkthrough | Cloud4DevOps [Video]. YouTube. https://www.youtube.com/watch?v=ZRpLrPjvNkk 
-2. How to automate incident response to security events with AWS Systems Manager Incident Manager | Amazon Web Services. (2021, September 17). Amazon Web Services. https://aws.amazon.com/blogs/security/how-to-automate-incident-response-to-security-events-with-aws-systems-manager-incident-manager/ 
-3. Perd1x. (2024, July 27). Automatically Isolate Compromised EC2 Instances with GuardDuty. Medium. https://perd1x.medium.com/automatically-isolate-compromised-ec2-instances-with-guardduty-d4080e8b039a 
+1. **Instance Availability:** Use severity-based isolation strategies to avoid unnecessary disruptions.
+2. **Minimizing False Positives:** Fine-tune GuardDuty and use suppression rules.
+3. **Enhanced Security Practices:** Implement comprehensive logging and multi-layer security.
+
+---
+
+## References
+
+1. [Cloud4DevOps](https://www.youtube.com/watch?v=ZRpLrPjvNkk)
+2. [AWS Incident Response Blog](https://aws.amazon.com/blogs/security/how-to-automate-incident-response-to-security-events-with-aws-systems-manager-incident-manager/)
+3. [Automatically Isolate EC2 Instances](https://perd1x.medium.com/automatically-isolate-compromised-ec2-instances-with-guardduty-d4080e8b039a)
+
+## **License**
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+---
+
+## **Contributing**
+Contributions are welcome! Feel free to open an issue or submit a pull request for improvements or fixes.
+
+---
+
+## **Author**
+Created by [reyincyber](https://github.com/reyincyber). Follow for more cloud security projects!
