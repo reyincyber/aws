@@ -50,7 +50,7 @@ This project automates the process of detecting and isolating compromised EC2 in
    - `AmazonEC2FullAccess`
    - `AWSLambdaFullAccess`
 4. Name the role (e.g., `LambdaSecurityRole`) and create it.
-
+![Image](https://github.com/user-attachments/assets/f0262258-e5fd-4c22-ae50-759ebba9ce72)
 ---
 
 ### 2. Enable GuardDuty
@@ -77,7 +77,7 @@ This project automates the process of detecting and isolating compromised EC2 in
      yum install nmap -y
      ```
 3. Name the instances `MaliciousEC2` and `CompromisedEC2`.
-
+![Image](https://github.com/user-attachments/assets/81e60d50-40b4-4c9b-8bfe-da032340ef94)
 ---
 
 ### 4. Create a Restricted Security Group
@@ -88,7 +88,7 @@ This project automates the process of detecting and isolating compromised EC2 in
    - **Name:** `IsolatedSecurityGroup`
    - **Inbound Rules:** SSH (Port 22) from your IP.
    - **Outbound Rules:** Default.
-
+![Image](https://github.com/user-attachments/assets/9bf4ca6a-e72a-43c4-a55b-6e341b56376e)
 ---
 
 ### 5. Add Threat List File to S3 and Configure GuardDuty Threat List
@@ -100,7 +100,7 @@ This project automates the process of detecting and isolating compromised EC2 in
 3. Configure GuardDuty to use the S3 threat list:
    - Navigate to **GuardDuty** → **Settings** → **Threat Lists**.
    - Add the S3 URL of your threat list file.
-
+![Image](https://github.com/user-attachments/assets/fa2fe142-a4d5-44d5-99e6-5189a57528ce)
 ---
 
 ### 6. Set Up the Lambda Function
@@ -111,7 +111,7 @@ This project automates the process of detecting and isolating compromised EC2 in
 2. Add the [Python code](https://github.com/reyincyber/aws/blob/e2619c4c47ea91bdf671186a4abbc0d18a86380f/automating-incident-response/lambda.py).
 3. Assign the `LambdaSecurityRole` to the function.
 4. Deploy and test the function.
-
+![Image](https://github.com/user-attachments/assets/0c614d4f-93f3-42c5-b24a-2a9828088d68)
 ---
 
 ### 7. Configure EventBridge Rule
@@ -123,7 +123,8 @@ This project automates the process of detecting and isolating compromised EC2 in
    - **Event Source:** GuardDuty
    - Use the [event pattern JSON](https://github.com/reyincyber/aws/blob/65bc7573964be2e71d8c3fbaa0159592a62f65be/automating-incident-response/event_pattern.json).
    - **Target:** Lambda function (`IsolateInstance`).
-
+![Image](https://github.com/user-attachments/assets/8e5f8328-d0be-475b-9afe-e9f815caf98c)
+![Image](https://github.com/user-attachments/assets/8b6d12d1-2cb6-4fa8-ac4b-575dfc90be52)
 ---
 
 ### 8. Create SNS Topic for Notifications
@@ -132,7 +133,8 @@ This project automates the process of detecting and isolating compromised EC2 in
 
 1. Create an SNS Topic (`GuardDutyNotifications`).
 2. Subscribe your email to the topic and confirm via email.
-
+![Image](https://github.com/user-attachments/assets/ff0ff868-00c4-43af-89ba-ddca9d5f0d20)
+![Image](https://github.com/user-attachments/assets/ca35ded7-ab1a-4d8c-803e-089055766b01)
 ---
 
 ## Testing the Workflow
@@ -143,11 +145,15 @@ This project automates the process of detecting and isolating compromised EC2 in
    - GuardDuty findings.
    - Isolation and stopping of `CompromisedEC2`.
    - SNS notifications.
-
+![Image](https://github.com/user-attachments/assets/30c38b40-8e1a-4148-a8ce-79cf617d977d)
+![Image](https://github.com/user-attachments/assets/7f18f920-a3a5-4abc-891e-9e3872369627)
+![Image](https://github.com/user-attachments/assets/acaf0fe1-13ea-448c-ba16-dcd73fae752a)
+![Image](https://github.com/user-attachments/assets/a3bd6558-5c49-498d-8d1c-117f14c0dca7)
+![Image](https://github.com/user-attachments/assets/309bd32f-7d63-402e-89c7-5dba09011603)
 ---
 
 ## Cleanup
-
+![Image](https://github.com/user-attachments/assets/4bb61057-7b3b-47d6-b6c6-30dfbbe5a257)
 1. Delete all resources:
    - EC2 instances
    - Lambda functions
