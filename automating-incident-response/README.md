@@ -37,6 +37,7 @@ This project automates the process of detecting and isolating compromised EC2 in
 [GitHub Repository](https://github.com/reyincyber/aws-security/tree/861c663e487afa7e966cab4069c6db1d76fa8ace/automating-incident-response)
 [Medium Walkthrough](https://cyberrey.medium.com/automating-ec2-instance-isolation-with-aws-lambda-and-guardduty-33a34fc88177)
 [Youtube](https://youtu.be/RCmdjOjsGUw)
+
 ---
 
 ## Setup Instructions
