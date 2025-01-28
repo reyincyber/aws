@@ -8,7 +8,8 @@ This repository provides a detailed guide for setting up an automated workflow t
 
 ## Table of Contents
 1. [Project Overview](#project-overview)
-2. [Setup Instructions](#setup-instructions)
+   - [🔗 Code and Documentation:](#🔗-Code-and-documentation:)
+3. [Setup Instructions](#setup-instructions)
    - [Create IAM Role](#1-create-an-iam-role)
    - [Enable GuardDuty](#2-enable-guardduty)
    - [Launch EC2 Instances](#3-launch-two-ec2-instances)
@@ -17,10 +18,10 @@ This repository provides a detailed guide for setting up an automated workflow t
    - [Set Up Lambda Function](#6-set-up-the-lambda-function)
    - [Configure EventBridge Rule](#7-configure-eventbridge-rule)
    - [Create SNS Topic for Notifications](#8-create-sns-topic-for-notifications)
-3. [Testing the Workflow](#testing-the-workflow)
-4. [Cleanup](#cleanup)
-5. [Real-World Considerations](#real-world-considerations)
-6. [References](#references)
+4. [Testing the Workflow](#testing-the-workflow)
+5. [Cleanup](#cleanup)
+6. [Real-World Considerations](#real-world-considerations)
+7. [References](#references)
 
 ---
 
@@ -32,6 +33,10 @@ This project automates the process of detecting and isolating compromised EC2 in
 - **Customizable Workflow:** Integrate a custom threat list using S3.
 - **Notifications:** Receive real-time email alerts via SNS.
 
+🔗 Code and Documentation:
+[GitHub Repository](https://github.com/reyincyber/aws-security/tree/861c663e487afa7e966cab4069c6db1d76fa8ace/automating-incident-response)
+[Medium Walkthrough](https://cyberrey.medium.com/automating-ec2-instance-isolation-with-aws-lambda-and-guardduty-33a34fc88177)
+[Youtube](https://youtu.be/RCmdjOjsGUw)
 ---
 
 ## Setup Instructions
