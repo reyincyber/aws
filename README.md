@@ -1,6 +1,6 @@
 # Amazon Web Services (AWS) Security Hands-on Projects
 
-## Project 1: [aws](https://github.com/reyincyber/aws-security/tree/76173448fc10cfd4cc84144fd26fd18b737f80d3/automating-incident-response)
+## Project 1: [automating-incident-response](https://github.com/reyincyber/aws-security/tree/76173448fc10cfd4cc84144fd26fd18b737f80d3/automating-incident-response)
 ### Automating EC2 Instance Isolation with AWS Lambda and GuardDuty
 🔗 Code and Documentation:
 [GitHub Repository](https://github.com/reyincyber/aws-security/tree/861c663e487afa7e966cab4069c6db1d76fa8ace/automating-incident-response); [Medium Walkthrough](https://cyberrey.medium.com/automating-ec2-instance-isolation-with-aws-lambda-and-guardduty-33a34fc88177); [Youtube](https://youtu.be/RCmdjOjsGUw)
